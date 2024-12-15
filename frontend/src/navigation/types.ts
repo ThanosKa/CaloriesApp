@@ -1,11 +1,34 @@
+// src/navigation/types.ts
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { CompositeNavigationProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { FoodDetailParams } from "../types/food";
+import { FoodItem } from "../services";
+
+import { RouteProp } from '@react-navigation/native';
+
+export type MainTabParamList = {
+  Scan: {
+    scanResult?: FoodItem;
+    error?: string;
+  } | undefined;
+  Profile: undefined;
+};
+
+export type ScanScreenRouteProp = RouteProp<MainTabParamList, 'Scan'>;
+
 export type RootStackParamList = {
-    MainTabs: undefined;
-    ScanResult: { foodId: string };
-    Auth: undefined;
+  MainTabs: undefined;
+  Camera: undefined;
+  FoodDetail: {
+    food: FoodItem['food'];
+    confidence: number;
   };
-  
-  export type MainTabParamList = {
-    Scan: undefined;
-    Profile: undefined;
-  };
-  
+  Auth: undefined;
+};
+
+export type RootNavigationType = CompositeNavigationProp<
+  NativeStackNavigationProp<RootStackParamList>,
+  BottomTabNavigationProp<MainTabParamList>
+>;
+

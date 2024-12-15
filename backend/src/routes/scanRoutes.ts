@@ -24,7 +24,6 @@ const router: Router = express.Router();
 // Scan route with authentication and file upload
 router.post(
   '/', 
-  authMiddleware,
   upload.single('image'),
   scanController.scanFood
 );

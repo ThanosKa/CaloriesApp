@@ -13,17 +13,55 @@ export interface ApiResponse<T> {
     };
   }
   
-  export interface FoodItem {
-    id: string;
+
+export interface FoodItem {
+  food: {
+    _id: string;
     name: string;
-    nutritionalInfo: {
-      calories: number;
+    calories: number;
+    macros: {
       protein: number;
       carbs: number;
-      fat: number;
+      fats: number;
     };
-    // Add other food properties
-  }
+    macroPercentages: {
+      protein: number;
+      carbs: number;
+      fats: number;
+    };
+    imageUrl: string;
+    similarImages: string[];
+    thirdPartyLinks: {
+      uberEats: string;
+      deliveroo: string;
+      foodPanda: string;
+    };
+    servingSize?: string;  // Optional serving size
+    nutritionalInfo?: {    // Optional detailed nutritional info
+      fiber?: number;
+      sugar?: number;
+      sodium?: number;
+      cholesterol?: number;
+    };
+    allergens?: string[];  // Optional allergens information
+    dietaryInfo?: {        // Optional dietary information
+      isVegan?: boolean;
+      isVegetarian?: boolean;
+      isGlutenFree?: boolean;
+    };
+  };
+  confidence: number;
+  scannedAt: string;
+}
+
+ 
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message: string;
+  data: T;
+}
+
   
   export interface LoginCredentials {
     email: string;
