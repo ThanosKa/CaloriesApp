@@ -1,6 +1,6 @@
 // src/screens/FoodDetailScreen.tsx
 // src/screens/FoodDetailScreen.tsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
@@ -11,15 +11,15 @@ import {
   Linking,
   Alert,
   Modal,
-} from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useAuth } from '../contexts/AuthContext';
+} from "react-native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { MaterialIcons } from "@expo/vector-icons";
+import { useAuth } from "../contexts/AuthContext";
 
-import { Food, FoodDetailParams } from '../types/food';
-import { RootStackParamList, RootNavigationType } from '../navigation/types';
+import { Food, FoodDetailParams } from "../types/food";
+import { RootStackParamList, RootNavigationType } from "../navigation/types";
 
-type FoodDetailScreenRouteProp = RouteProp<RootStackParamList, 'FoodDetail'>;
+type FoodDetailScreenRouteProp = RouteProp<RootStackParamList, "FoodDetail">;
 
 export default function FoodDetailScreen() {
   const navigation = useNavigation<RootNavigationType>();
@@ -36,15 +36,15 @@ export default function FoodDetailScreen() {
 
     try {
       // Implement save food logic here
-      Alert.alert('Success', 'Food saved successfully!');
+      Alert.alert("Success", "Food saved successfully!");
     } catch (error) {
-      Alert.alert('Error', 'Failed to save food');
+      Alert.alert("Error", "Failed to save food");
     }
   };
 
   const openDeliveryLink = (url: string) => {
     Linking.openURL(url).catch(() => {
-      Alert.alert('Error', 'Could not open delivery link');
+      Alert.alert("Error", "Could not open delivery link");
     });
   };
 
@@ -64,7 +64,7 @@ export default function FoodDetailScreen() {
       <View style={styles.nutritionCard}>
         <Text style={styles.sectionTitle}>Nutritional Information</Text>
         <Text style={styles.calories}>{food.calories} calories</Text>
-        
+
         <View style={styles.macrosContainer}>
           <View style={styles.macroItem}>
             <Text style={styles.macroValue}>{food.macros.protein}g</Text>
@@ -97,19 +97,20 @@ export default function FoodDetailScreen() {
       <View style={styles.deliveryOptions}>
         <Text style={styles.sectionTitle}>Order Online</Text>
         <View style={styles.deliveryButtons}>
-          {Object.entries(food.thirdPartyLinks).map(([platform, url]) => (
-            url && (
-              <TouchableOpacity
-                key={platform}
-                style={styles.deliveryButton}
-                onPress={() => openDeliveryLink(url)}
-              >
-                <Text style={styles.deliveryButtonText}>
-                  {platform.charAt(0).toUpperCase() + platform.slice(1)}
-                </Text>
-              </TouchableOpacity>
-            )
-          ))}
+          {Object.entries(food.thirdPartyLinks).map(
+            ([platform, url]) =>
+              url && (
+                <TouchableOpacity
+                  key={platform}
+                  style={styles.deliveryButton}
+                  onPress={() => openDeliveryLink(url)}
+                >
+                  <Text style={styles.deliveryButtonText}>
+                    {platform.charAt(0).toUpperCase() + platform.slice(1)}
+                  </Text>
+                </TouchableOpacity>
+              )
+          )}
         </View>
       </View>
 
@@ -129,7 +130,7 @@ export default function FoodDetailScreen() {
               style={styles.modalButton}
               onPress={() => {
                 setShowAuthModal(false);
-                navigation.navigate('Auth');
+                navigation.navigate("Auth");
               }}
             >
               <Text style={styles.modalButtonText}>Login</Text>
@@ -147,67 +148,63 @@ export default function FoodDetailScreen() {
   );
 }
 
-// Your styles remain the same...
- 
-
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   mainImage: {
-    width: '100%',
+    width: "100%",
     height: 250,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
   },
   foodName: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   saveButtonText: {
     marginLeft: 4,
-    color: '#2196F3',
+    color: "#2196F3",
   },
   nutritionCard: {
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     margin: 16,
     borderRadius: 8,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 8,
   },
   calories: {
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: "500",
     marginBottom: 16,
   },
   macrosContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
   macroItem: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   macroValue: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   macroLabel: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   similarFoods: {
     padding: 16,
@@ -222,56 +219,56 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   deliveryButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
   },
   deliveryButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     padding: 12,
     borderRadius: 8,
     minWidth: 100,
-    alignItems: 'center',
+    alignItems: "center",
   },
   deliveryButtonText: {
-    color: '#fff',
-    fontWeight: '500',
+    color: "#fff",
+    fontWeight: "500",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 8,
-    width: '80%',
+    width: "80%",
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 12,
   },
   modalText: {
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
     padding: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 8,
   },
   modalButtonText: {
-    color: '#fff',
-    fontWeight: '500',
+    color: "#fff",
+    fontWeight: "500",
   },
   modalSecondaryButton: {
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   modalSecondaryButtonText: {
-    color: '#333',
+    color: "#333",
   },
 });

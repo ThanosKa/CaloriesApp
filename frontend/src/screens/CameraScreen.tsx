@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ActivityIndicator, Platform } from 'react-native';
-import CameraComponent from '../components/CameraComponent';
-import { useNavigation } from '@react-navigation/native';
-import { RootNavigationType } from '../navigation/types';
-import { scanService } from '../services/scanService';
+import React, { useState } from "react";
+import { View, StyleSheet, ActivityIndicator, Platform } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { RootNavigationType } from "../navigation/types";
+import { scanService } from "../services/scanService";
+import CameraComponent from "../components/camera/CameraComponent";
 
 // Add this type for the image
 type ImageData = {
@@ -20,28 +20,25 @@ export default function CameraScreen() {
     setIsLoading(true);
     try {
       const formData = new FormData();
-      
+
       // Handle the image data properly based on platform
       const imageData: ImageData = {
-        uri: Platform.OS === 'ios' ? uri.replace('file://', '') : uri,
-        type: 'image/jpeg',
-        name: 'food.jpg',
+        uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
+        type: "image/jpeg",
+        name: "food.jpg",
       };
 
-      // Append as any to bypass TypeScript checking for FormData
-      formData.append('image', imageData as any);
+      formData.append("image", imageData as any);
 
       const response = await scanService.scanFood(formData);
-      navigation.navigate('Scan', { scanResult: response.data });
+      navigation.navigate("Scan", { scanResult: response.data });
     } catch (error) {
-      console.error('Scan error:', error);
-      navigation.navigate('Scan', { error: 'Failed to scan food' });
+      console.error("Scan error:", error);
+      navigation.navigate("Scan", { error: "Failed to scan food" });
     } finally {
       setIsLoading(false);
     }
   };
-
-
 
   const handleClose = () => {
     navigation.goBack();
@@ -57,7 +54,7 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      <CameraComponent 
+      <CameraComponent
         onCapture={handleCapture}
         onClose={handleClose}
         onPickImages={() => {}}
@@ -74,8 +71,8 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000",
   },
 });
