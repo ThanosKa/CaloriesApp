@@ -63,13 +63,34 @@ class FoodGenerator {
     return { protein, carbs, fats };
   }
 
-  private static generateImages(): { main: string; similar: string[] } {
-    const mainImage = "https://placehold.co/600x400.jpg";
+  private static generateImages(uploadedImageUrl?: string): {
+    main: string;
+    similar: string[];
+  } {
+    const mainImage = uploadedImageUrl || "https://placehold.co/600x400.jpg";
     const similarImages = Array(3)
       .fill(null)
       .map(() => "https://placehold.co/600x400.jpg");
 
     return { main: mainImage, similar: similarImages };
+  }
+
+  static generateRandomFood(uploadedImageUrl?: string): FoodItem {
+    const name = `${this.getRandomElement(foodTypes)} ${this.getRandomElement(
+      foodNames
+    )}`;
+    const calories = this.getRandomNumber(200, 800);
+    const images = this.generateImages(uploadedImageUrl);
+
+    return {
+      _id: new Types.ObjectId(),
+      name,
+      calories,
+      macros: this.generateMacros(calories),
+      imageUrl: images.main,
+      similarImages: images.similar,
+      thirdPartyLinks: this.generateDeliveryLinks(name),
+    };
   }
 
   private static generateDeliveryLinks(foodName: string) {
@@ -80,24 +101,6 @@ class FoodGenerator {
       ...(Math.random() > 0.5 && {
         foodPanda: `https://foodpanda.com/restaurants?q=${encodedFood}`,
       }),
-    };
-  }
-
-  static generateRandomFood(): FoodItem {
-    const name = `${this.getRandomElement(foodTypes)} ${this.getRandomElement(
-      foodNames
-    )}`;
-    const calories = this.getRandomNumber(200, 800);
-    const images = this.generateImages();
-
-    return {
-      _id: new Types.ObjectId(),
-      name,
-      calories,
-      macros: this.generateMacros(calories),
-      imageUrl: images.main,
-      similarImages: images.similar,
-      thirdPartyLinks: this.generateDeliveryLinks(name),
     };
   }
 }

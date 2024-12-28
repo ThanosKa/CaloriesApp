@@ -1,5 +1,5 @@
 // components/FoodImage/FoodImage.tsx
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import {
   View,
   Image,
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   Dimensions,
+  Animated,
 } from "react-native";
 
 interface FoodImageProps {
@@ -14,7 +15,9 @@ interface FoodImageProps {
   name: string;
   loading: boolean;
   setLoading: (loading: boolean) => void;
+  animate?: boolean;
 }
+
 const { width } = Dimensions.get("window");
 
 export const FoodImage: React.FC<FoodImageProps> = ({
@@ -22,21 +25,37 @@ export const FoodImage: React.FC<FoodImageProps> = ({
   name,
   loading,
   setLoading,
-}) => (
-  <View style={styles.mainImageContainer}>
-    <Image
-      source={{ uri: imageUrl }}
-      style={styles.mainFoodImage}
-      onLoadStart={() => setLoading(true)}
-      onLoadEnd={() => setLoading(false)}
-    />
-    {loading && (
-      <ActivityIndicator style={styles.loader} size="large" color="#007AFF" />
-    )}
-    <Text style={styles.foodName}>{name}</Text>
-  </View>
-);
+  animate = false,
+}) => {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  useEffect(() => {
+    if (animate) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      fadeAnim.setValue(1);
+    }
+  }, [animate]);
+
+  return (
+    <Animated.View style={[styles.mainImageContainer, { opacity: fadeAnim }]}>
+      <Image
+        source={{ uri: imageUrl }}
+        style={styles.mainFoodImage}
+        onLoadStart={() => setLoading(true)}
+        onLoadEnd={() => setLoading(false)}
+      />
+      {loading && (
+        <ActivityIndicator style={styles.loader} size="large" color="#007AFF" />
+      )}
+      <Text style={styles.foodName}>{name}</Text>
+    </Animated.View>
+  );
+};
 const styles = StyleSheet.create({
   mainImageContainer: {
     alignItems: "center",

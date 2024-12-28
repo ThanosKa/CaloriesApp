@@ -1,5 +1,5 @@
 // screens/ScanScreen.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -17,6 +17,7 @@ import { NutritionalInfo } from "../components/NutritionalInfo/NutritionalInfo";
 import { FoodImage } from "../components/FoodImage/FoodImage";
 import MacroCircles from "../components/MacrosCircles/MacroCircles";
 import DeliveryServices from "../components/DeliveryService/DeliveryService";
+import { LoadingState } from "../components/LoadingState/LoadingState";
 
 const { width } = Dimensions.get("window");
 
@@ -25,13 +26,50 @@ export default function ScanScreen() {
   const route = useRoute<ScanScreenRouteProp>();
   const scanResult = route.params?.scanResult;
   const error = route.params?.error;
-  const [loading, setLoading] = React.useState(false);
 
-  React.useEffect(() => {
+  const [loading, setLoading] = useState(false);
+  const [showContent, setShowContent] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(true);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [macroAnimationComplete, setMacroAnimationComplete] = useState(false);
+
+  useEffect(() => {
     if (error) {
       Alert.alert("Error", error);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (scanResult) {
+      // Reset states
+      setIsInitialLoading(true);
+      setShowContent(false);
+      setShowAnimation(true);
+      setMacroAnimationComplete(false);
+
+      // After macro animation completes (1.5s), start showing content
+      const macroTimer = setTimeout(() => {
+        setMacroAnimationComplete(true);
+      }, 1500);
+
+      // Show full content after loading state
+      const contentTimer = setTimeout(() => {
+        setIsInitialLoading(false);
+        setShowContent(true);
+      }, 2000);
+
+      // Complete all animations
+      const animationTimer = setTimeout(() => {
+        setShowAnimation(false);
+      }, 3500);
+
+      return () => {
+        clearTimeout(macroTimer);
+        clearTimeout(contentTimer);
+        clearTimeout(animationTimer);
+      };
+    }
+  }, [scanResult]);
 
   const handleScanAgain = () => {
     navigation.navigate("Camera");
@@ -59,65 +97,96 @@ export default function ScanScreen() {
     }
   };
 
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Ionicons name="arrow-back" size={24} color="#333" />
+      </TouchableOpacity>
+      <Text style={styles.confidence}>
+        {(scanResult?.confidence ?? 0 * 100).toFixed(1)}% Match
+      </Text>
+    </View>
+  );
+
+  const renderMacroCircles = () => (
+    <MacroCircles food={scanResult?.food} animate={!macroAnimationComplete} />
+  );
+
+  if (!scanResult) {
+    return (
+      <View style={styles.emptyContainer}>
+        <Ionicons name="camera-outline" size={64} color="#666" />
+        <Text style={styles.emptyText}>
+          Take a photo of your food to get started
+        </Text>
+        <TouchableOpacity style={styles.scanButton} onPress={handleScanAgain}>
+          <Text style={styles.scanButtonText}>Start Scan</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (isInitialLoading) {
+    return (
+      <View style={styles.container}>
+        {renderHeader()}
+        {renderMacroCircles()}
+        <LoadingState skipMacros />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container}>
-      {scanResult ? (
-        <View style={styles.resultContainer}>
-          <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Ionicons name="arrow-back" size={24} color="#333" />
-            </TouchableOpacity>
-            <Text style={styles.confidence}>
-              {(scanResult.confidence * 100).toFixed(1)}% Match
-            </Text>
-          </View>
+      <View style={styles.resultContainer}>
+        {renderHeader()}
+        {renderMacroCircles()}
 
-          <MacroCircles food={scanResult.food} />
+        {showContent && (
+          <>
+            <FoodImage
+              imageUrl={scanResult.food.imageUrl}
+              name={scanResult.food.name}
+              loading={loading}
+              setLoading={setLoading}
+              animate={showAnimation}
+            />
 
-          <FoodImage
-            imageUrl={scanResult.food.imageUrl}
-            name={scanResult.food.name}
-            loading={loading}
-            setLoading={setLoading}
-          />
+            <NutritionalInfo food={scanResult.food} animate={showAnimation} />
 
-          <NutritionalInfo food={scanResult.food} />
+            <DeliveryServices
+              thirdPartyLinks={scanResult.food.thirdPartyLinks}
+              onPress={handleDeliveryServicePress}
+              animate={showAnimation}
+            />
 
-          <DeliveryServices
-            thirdPartyLinks={scanResult.food.thirdPartyLinks}
-            onPress={handleDeliveryServicePress}
-          />
+            <View style={styles.actionButtons}>
+              <TouchableOpacity
+                style={[
+                  styles.detailsButton,
+                  showAnimation && styles.buttonAnimated,
+                ]}
+                onPress={handleViewDetails}
+              >
+                <Text style={styles.detailsButtonText}>View Details</Text>
+              </TouchableOpacity>
 
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.detailsButton}
-              onPress={handleViewDetails}
-            >
-              <Text style={styles.detailsButtonText}>View Details</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.scanButton}
-              onPress={handleScanAgain}
-            >
-              <Text style={styles.scanButtonText}>Scan Again</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="camera-outline" size={64} color="#666" />
-          <Text style={styles.emptyText}>
-            Take a photo of your food to get started
-          </Text>
-          <TouchableOpacity style={styles.scanButton} onPress={handleScanAgain}>
-            <Text style={styles.scanButtonText}>Start Scan</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+              <TouchableOpacity
+                style={[
+                  styles.scanButton,
+                  showAnimation && styles.buttonAnimated,
+                ]}
+                onPress={handleScanAgain}
+              >
+                <Text style={styles.scanButtonText}>Scan Again</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+      </View>
     </ScrollView>
   );
 }
@@ -155,17 +224,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#007AFF",
-  },
-  detailsButtonText: {
-    color: "#007AFF",
-    fontSize: 16,
-    fontWeight: "600",
+    opacity: 1,
   },
   scanButton: {
     backgroundColor: "#007AFF",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",
+    opacity: 1,
+  },
+  buttonAnimated: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
+  },
+  detailsButtonText: {
+    color: "#007AFF",
+    fontSize: 16,
+    fontWeight: "600",
   },
   scanButtonText: {
     color: "#fff",

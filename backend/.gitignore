@@ -94,3 +94,7 @@ dist
 .vscode-test
 
 **/*.jpg
+
+# .gitignore
+uploads/*
+!uploads/.gitkeep
