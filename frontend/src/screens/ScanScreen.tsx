@@ -131,7 +131,7 @@ export default function ScanScreen() {
   }
 
   // Show loading state with captured image
-  if (tempImageUri && !isLoading) {
+  if (tempImageUri && isLoading) {
     return (
       <View style={styles.container}>
         {renderHeader()}
