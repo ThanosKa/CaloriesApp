@@ -16,25 +16,40 @@ export default function CameraScreen() {
   const navigation = useNavigation<RootNavigationType>();
   const [isLoading, setIsLoading] = useState(false);
 
+  // CameraScreen.tsx
   const handleCapture = async (uri: string) => {
     setIsLoading(true);
     try {
       const formData = new FormData();
-
-      // Handle the image data properly based on platform
       const imageData: ImageData = {
         uri: Platform.OS === "ios" ? uri.replace("file://", "") : uri,
         type: "image/jpeg",
         name: "food.jpg",
       };
-
       formData.append("image", imageData as any);
 
+      // First navigate with the temporary image
+      navigation.navigate("Scan", {
+        tempImageUri: uri,
+        isLoading: true,
+      });
+
+      // Make the API call
       const response = await scanService.scanFood(formData);
-      navigation.navigate("Scan", { scanResult: response.data });
+
+      // Then navigate again with the results
+      navigation.navigate("Scan", {
+        scanResult: response.data,
+        tempImageUri: uri,
+        isLoading: false,
+      });
     } catch (error) {
       console.error("Scan error:", error);
-      navigation.navigate("Scan", { error: "Failed to scan food" });
+      navigation.navigate("Scan", {
+        error: "Failed to scan food",
+        tempImageUri: uri,
+        isLoading: false,
+      });
     } finally {
       setIsLoading(false);
     }

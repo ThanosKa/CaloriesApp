@@ -26,7 +26,8 @@ export default function ScanScreen() {
   const route = useRoute<ScanScreenRouteProp>();
   const scanResult = route.params?.scanResult;
   const error = route.params?.error;
-
+  const tempImageUri = route.params?.tempImageUri;
+  const isLoading = route.params?.isLoading;
   const [loading, setLoading] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [showAnimation, setShowAnimation] = useState(true);
@@ -41,24 +42,20 @@ export default function ScanScreen() {
 
   useEffect(() => {
     if (scanResult) {
-      // Reset states
       setIsInitialLoading(true);
       setShowContent(false);
       setShowAnimation(true);
       setMacroAnimationComplete(false);
 
-      // After macro animation completes (1.5s), start showing content
       const macroTimer = setTimeout(() => {
         setMacroAnimationComplete(true);
       }, 1500);
 
-      // Show full content after loading state
       const contentTimer = setTimeout(() => {
         setIsInitialLoading(false);
         setShowContent(true);
       }, 2000);
 
-      // Complete all animations
       const animationTimer = setTimeout(() => {
         setShowAnimation(false);
       }, 3500);
@@ -112,10 +109,14 @@ export default function ScanScreen() {
   );
 
   const renderMacroCircles = () => (
-    <MacroCircles food={scanResult?.food} animate={!macroAnimationComplete} />
+    <MacroCircles
+      food={scanResult?.food}
+      animate={!macroAnimationComplete}
+      isLoading={isLoading}
+    />
   );
 
-  if (!scanResult) {
+  if (!scanResult && !tempImageUri) {
     return (
       <View style={styles.emptyContainer}>
         <Ionicons name="camera-outline" size={64} color="#666" />
@@ -129,12 +130,20 @@ export default function ScanScreen() {
     );
   }
 
-  if (isInitialLoading) {
+  // Show loading state with captured image
+  if (tempImageUri && !isLoading) {
     return (
       <View style={styles.container}>
         {renderHeader()}
-        {renderMacroCircles()}
-        <LoadingState skipMacros />
+        <MacroCircles isLoading={true} />
+        <FoodImage
+          imageUrl=""
+          tempImageUri={tempImageUri}
+          name="Analyzing..."
+          loading={true}
+          setLoading={setLoading}
+          animate={false}
+        />
       </View>
     );
   }
@@ -145,52 +154,57 @@ export default function ScanScreen() {
         {renderHeader()}
         {renderMacroCircles()}
 
-        {showContent && (
+        {(showContent || scanResult) && (
           <>
             <FoodImage
-              imageUrl={scanResult.food.imageUrl}
-              name={scanResult.food.name}
-              loading={loading}
+              imageUrl={scanResult?.food.imageUrl}
+              tempImageUri={tempImageUri}
+              name={scanResult?.food.name || "Analyzing..."}
+              loading={false}
               setLoading={setLoading}
               animate={showAnimation}
             />
 
-            <NutritionalInfo food={scanResult.food} animate={showAnimation} />
+            {scanResult && (
+              <>
+                <NutritionalInfo
+                  food={scanResult.food}
+                  animate={showAnimation}
+                />
+                <DeliveryServices
+                  thirdPartyLinks={scanResult.food.thirdPartyLinks}
+                  onPress={handleDeliveryServicePress}
+                  animate={showAnimation}
+                />
+                <View style={styles.actionButtons}>
+                  <TouchableOpacity
+                    style={[
+                      styles.detailsButton,
+                      showAnimation && styles.buttonAnimated,
+                    ]}
+                    onPress={handleViewDetails}
+                  >
+                    <Text style={styles.detailsButtonText}>View Details</Text>
+                  </TouchableOpacity>
 
-            <DeliveryServices
-              thirdPartyLinks={scanResult.food.thirdPartyLinks}
-              onPress={handleDeliveryServicePress}
-              animate={showAnimation}
-            />
-
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={[
-                  styles.detailsButton,
-                  showAnimation && styles.buttonAnimated,
-                ]}
-                onPress={handleViewDetails}
-              >
-                <Text style={styles.detailsButtonText}>View Details</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.scanButton,
-                  showAnimation && styles.buttonAnimated,
-                ]}
-                onPress={handleScanAgain}
-              >
-                <Text style={styles.scanButtonText}>Scan Again</Text>
-              </TouchableOpacity>
-            </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.scanButton,
+                      showAnimation && styles.buttonAnimated,
+                    ]}
+                    onPress={handleScanAgain}
+                  >
+                    <Text style={styles.scanButtonText}>Scan Again</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
           </>
         )}
       </View>
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
