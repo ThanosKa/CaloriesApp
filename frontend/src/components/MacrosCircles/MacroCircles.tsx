@@ -27,65 +27,60 @@ const MacroCircle: React.FC<MacroCircleProps> = ({
   const loadingAnimation = useRef(new Animated.Value(0)).current;
   const [displayedPercentage, setDisplayedPercentage] = useState(0);
   const [displayedValue, setDisplayedValue] = useState(0);
-  const [loadingPercentage, setLoadingPercentage] = useState(0);
 
   useEffect(() => {
     if (isLoading) {
-      const startLoadingAnimation = () => {
-        setLoadingPercentage(0);
+      // Reset the loading animation
+      loadingAnimation.setValue(0);
+
+      const animate = () => {
         Animated.sequence([
           Animated.timing(loadingAnimation, {
             toValue: 100,
             duration: 1500,
-            useNativeDriver: false,
+            useNativeDriver: true,
             easing: Easing.linear,
           }),
           Animated.timing(loadingAnimation, {
             toValue: 0,
             duration: 0,
-            useNativeDriver: false,
+            useNativeDriver: true,
           }),
         ]).start((finished) => {
           if (finished && isLoading) {
-            startLoadingAnimation();
+            animate();
           }
         });
-
-        // Animate the loading percentage
-        let startTime = Date.now();
-        const duration = 1500;
-
-        const updateLoadingPercentage = () => {
-          const now = Date.now();
-          const progress = Math.min((now - startTime) / duration, 1);
-
-          if (progress < 1) {
-            setLoadingPercentage(Math.round(100 * progress));
-            requestAnimationFrame(updateLoadingPercentage);
-          } else {
-            setLoadingPercentage(0);
-            if (isLoading) {
-              startTime = Date.now();
-              requestAnimationFrame(updateLoadingPercentage);
-            }
-          }
-        };
-
-        requestAnimationFrame(updateLoadingPercentage);
       };
 
-      startLoadingAnimation();
+      animate();
+
+      // Add listener to update displayed percentage based on animation value
+      const loadingListener = loadingAnimation.addListener(({ value }) => {
+        setDisplayedPercentage(Math.round(value));
+      });
+
       return () => {
+        loadingAnimation.removeListener(loadingListener);
         loadingAnimation.stopAnimation();
       };
-    } else if (animate) {
-      // ... (existing animation code remains the same)
     } else {
-      progressAnimation.setValue(percentage);
+      // Normal progress animation
+      Animated.timing(progressAnimation, {
+        toValue: percentage,
+        duration: animate ? 1000 : 0,
+        useNativeDriver: true,
+        easing: Easing.out(Easing.ease),
+      }).start();
+
       setDisplayedPercentage(percentage);
       setDisplayedValue(value);
     }
-  }, [animate, percentage, value, isLoading]);
+
+    return () => {
+      progressAnimation.stopAnimation();
+    };
+  }, [isLoading, percentage, value, animate]);
 
   const circleCircumference = 2 * Math.PI * 40;
   const strokeDashoffset = isLoading
@@ -133,7 +128,9 @@ const MacroCircle: React.FC<MacroCircleProps> = ({
           <View style={styles.valueContainer}>
             {isLoading ? (
               <>
-                <Text style={styles.macroPercentage}>{loadingPercentage}%</Text>
+                <Text style={styles.macroPercentage}>
+                  {displayedPercentage}%
+                </Text>
                 <Text style={styles.macroValue}>0g</Text>
               </>
             ) : (
@@ -161,25 +158,25 @@ export const MacroCircles: React.FC<{
     <View style={styles.macrosRow}>
       <MacroCircle
         percentage={isLoading ? 0 : food?.macroPercentages?.protein || 0}
-        macro="Protein"
+        macro="🍖 Protein"
         value={isLoading ? 0 : food?.macros?.protein || 0}
-        gradientColors={["#FF6B6B", "#FF8E8E"]}
+        gradientColors={["#E53935", "#FF5252"]}
         animate={animate}
         isLoading={isLoading}
       />
       <MacroCircle
         percentage={isLoading ? 0 : food?.macroPercentages?.carbs || 0}
-        macro="Carbs"
+        macro="🍞 Carbs"
         value={isLoading ? 0 : food?.macros?.carbs || 0}
-        gradientColors={["#4ECDC4", "#6EE7E1"]}
+        gradientColors={["#FB8C00", "#FFA726"]}
         animate={animate}
         isLoading={isLoading}
       />
       <MacroCircle
         percentage={isLoading ? 0 : food?.macroPercentages?.fats || 0}
-        macro="Fats"
+        macro="🥑 Fats"
         value={isLoading ? 0 : food?.macros?.fats || 0}
-        gradientColors={["#FFE66D", "#FFF3A3"]}
+        gradientColors={["#1E88E5", "#42A5F5"]}
         animate={animate}
         isLoading={isLoading}
       />
@@ -230,8 +227,8 @@ const styles = StyleSheet.create({
   },
   macroLabel: {
     fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
+    color: "gray",
+    fontWeight: "bold",
   },
 });
 
