@@ -1,5 +1,5 @@
 // components/NutritionSwiper/NutritionSwiper.tsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import Swiper from "react-native-swiper";
 import { MacroCircles } from "../MacrosCircles/MacroCircles";
@@ -12,6 +12,23 @@ interface NutritionSwiperProps {
   isLoading?: boolean;
 }
 
+const LoadingDots = () => {
+  const [dots, setDots] = useState(".");
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots((current) => {
+        if (current.length >= 3) return ".";
+        return current + ".";
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return <Text style={styles.nutritionalValue}>{dots}</Text>;
+};
+
 export const NutritionSwiper: React.FC<NutritionSwiperProps> = ({
   food,
   animate = false,
@@ -21,11 +38,12 @@ export const NutritionSwiper: React.FC<NutritionSwiperProps> = ({
     <View style={styles.wrapper}>
       <View style={styles.container}>
         <Swiper
-          loop={true}
+          loop={false} // Changed to false to prevent circular swiping
           height={250}
           dotStyle={styles.dot}
           activeDotStyle={styles.activeDot}
           paginationStyle={styles.pagination}
+          showsButtons={false} // Optional: hide navigation buttons
         >
           {/* Nutritional Info Slide */}
           <View style={styles.nutritionSlideContainer}>
@@ -33,16 +51,22 @@ export const NutritionSwiper: React.FC<NutritionSwiperProps> = ({
             <View style={styles.nutritionalGrid}>
               <View style={styles.nutritionalItem}>
                 <Text style={styles.nutritionalEmoji}>🔥</Text>
-                <Text style={styles.nutritionalValue}>
-                  {isLoading ? "..." : food?.calories}
-                </Text>
+                {isLoading ? (
+                  <LoadingDots />
+                ) : (
+                  <Text style={styles.nutritionalValue}>{food?.calories}</Text>
+                )}
                 <Text style={styles.nutritionalLabel}>Calories</Text>
               </View>
               <View style={[styles.nutritionalItem, styles.servingSizeItem]}>
                 <Text style={styles.nutritionalEmoji}>⚖️</Text>
-                <Text style={styles.nutritionalValue}>
-                  {isLoading ? "..." : food?.servingSize || "100g"}
-                </Text>
+                {isLoading ? (
+                  <LoadingDots />
+                ) : (
+                  <Text style={styles.nutritionalValue}>
+                    {food?.servingSize || "100g"}
+                  </Text>
+                )}
                 <Text style={styles.nutritionalLabel}>Serving Size</Text>
               </View>
             </View>
@@ -51,7 +75,7 @@ export const NutritionSwiper: React.FC<NutritionSwiperProps> = ({
           {/* Macros Slide */}
           <View style={styles.macrosSlideContainer}>
             <View style={styles.macrosTitleContainer}>
-              <Text style={styles.sectionTitle}>Macronutrients</Text>
+              <Text style={styles.sectionTitle}>Macros</Text>
             </View>
             <View style={styles.macrosContent}>
               <MacroCircles
@@ -85,7 +109,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 3.84,
   },
-  // Nutrition Info Slide Styles
   nutritionSlideContainer: {
     padding: 25,
     alignItems: "center",
@@ -117,11 +140,11 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   nutritionalLabel: {
-    fontSize: 16,
-    color: "#666",
     marginTop: 4,
+    fontSize: 16,
+    color: "gray",
+    fontWeight: "bold",
   },
-  // Macros Slide Styles
   macrosSlideContainer: {
     flex: 1,
     paddingVertical: 25,
@@ -130,16 +153,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 24,
   },
-  macrosContent: {
-    // Empty to preserve original macro circles spacing
-  },
-  // Common Styles
+  macrosContent: {},
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: "#333",
   },
-  // Swiper Styles
   dot: {
     backgroundColor: "rgba(0,0,0,.2)",
     width: 8,

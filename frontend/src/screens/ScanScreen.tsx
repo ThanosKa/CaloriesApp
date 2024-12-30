@@ -17,7 +17,7 @@ import { NutritionalInfo } from "../components/NutritionalInfo/NutritionalInfo";
 import { FoodImage } from "../components/FoodImage/FoodImage";
 import MacroCircles from "../components/MacrosCircles/MacroCircles";
 import DeliveryServices from "../components/DeliveryService/DeliveryService";
-import { LoadingState } from "../components/LoadingState/LoadingState";
+import NutritionSwiper from "../components/NutritionSwiper/NutritionSwiper";
 
 const { width } = Dimensions.get("window");
 
@@ -108,14 +108,6 @@ export default function ScanScreen() {
     </View>
   );
 
-  const renderMacroCircles = () => (
-    <MacroCircles
-      food={scanResult?.food}
-      animate={!macroAnimationComplete}
-      isLoading={isLoading}
-    />
-  );
-
   if (!scanResult && !tempImageUri) {
     return (
       <View style={styles.emptyContainer}>
@@ -135,7 +127,11 @@ export default function ScanScreen() {
     return (
       <View style={styles.container}>
         {renderHeader()}
-        <MacroCircles isLoading={true} />
+        <NutritionSwiper
+          food={scanResult?.food}
+          animate={showAnimation}
+          isLoading={true}
+        />
         <FoodImage
           imageUrl=""
           tempImageUri={tempImageUri}
@@ -152,10 +148,14 @@ export default function ScanScreen() {
     <ScrollView style={styles.container}>
       <View style={styles.resultContainer}>
         {renderHeader()}
-        {renderMacroCircles()}
 
         {(showContent || scanResult) && (
           <>
+            <NutritionSwiper
+              food={scanResult?.food}
+              animate={showAnimation}
+              isLoading={isLoading}
+            />
             <FoodImage
               imageUrl={scanResult?.food.imageUrl}
               tempImageUri={tempImageUri}
@@ -167,10 +167,6 @@ export default function ScanScreen() {
 
             {scanResult && (
               <>
-                <NutritionalInfo
-                  food={scanResult.food}
-                  animate={showAnimation}
-                />
                 <DeliveryServices
                   thirdPartyLinks={scanResult.food.thirdPartyLinks}
                   onPress={handleDeliveryServicePress}
